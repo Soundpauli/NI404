@@ -1,0 +1,68 @@
+
+LED:
+DIN - Teensy: 17
++5V - Teensy: +5V
+GND - Teensy: GND
+
+
+Encoder Left:
+CLK - Teensy: 5
+DT  - Teensy: 22
+Switch - Teensy: 15
+-
++3v - 3V
+GND - GND
+
+Encoder Middle:
+CLK - Teensy: 9
+DT  - Teensy: 14
+Switch  - Teensy: 16
+-
+
++3v - 3V
+GND - GND
+
+
+Encoder Right:
+CLK - Teensy: 4
+DT  - Teensy: 2
+Switch  - Teensy: 3
+-
++3v - 3V
+GND - GND
+
+
+  
+DAC_PCB:
+BCK - Teensy: 21
+DIN - Teensy: 7
+DOUT - Teensy: 8
+WS  - Teensy: 20
++3  - 3V
+GND - GND
+
+0   ->  MIDI IN 
+1   ->  MIDI OUT
+2   ->  NI=>Right Encoder CLOCK
+3   ->  NI=>Right Encoder BUTTON
+4   ->  NI=>Right Encoder BUS
+5   ->  NI=>Left Encoder CLOCK
+6   ->  MEMORYCHIP  
+7   ->  AudioDAC DIN
+8   ->  AudioDAC DOUT
+9   ->  NI=>Middle Encoder CLOCK
+10  ->  ChipSelect CS for SD 
+11  ->  Data Storage (SPI) from Teensy to SD/MEM
+12  ->  Data Storage (SPI) from SD/MEM to Teensy
+13  ->  Data Storage (SPI) Clock
+14  ->  NI=>Middle Encoder BUS
+15  ->  NI=> Left Encoder BUTTON (+volume?)
+16  ->  NI=> Middle Encoder BUTTON
+17  ->  NI=> LED-MAXTRIX DIN
+18  ->  Control Data (I2C)
+19  ->  Control Clock (I2C)
+20  ->  Audio Left/Right Clock, 44.1 kHz
+21  ->  Audio Bit Clock, 1.41 or 2.82 MHz
+22  ->  NI=>Left Encoder BUS
+23  ->  Audio Master Clock, 11.29 MHz
+*/

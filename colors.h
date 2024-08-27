@@ -17,6 +17,6 @@ const CRGB col[] = {
   CRGB(0, 0, 0),   //
   CRGB(0, 0, 0),   //
   CRGB(0, 0, 0),  //
-  CRGB(0, 0, 0),  //
   
-  CRGB(10, 10, 10)};  // SYNTH
+  CRGB(17, 5, 35),  //13
+  CRGB(20, 20, 20)};  // 14 SYNTH

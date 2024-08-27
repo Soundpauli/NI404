@@ -1,141 +1,148 @@
+// GUItool: begin automatically generated code
+AudioPlayArrayResmp sound0;  //xy=375,182
+AudioPlayArrayResmp sound1;  //xy=375,182
+AudioPlayArrayResmp sound2;  //xy=375,182
 
-//AudioPlayArrayResmp sounds[1];
-AudioPlayArrayResmp sound0;  // PREV
-AudioPlayArrayResmp sound1;
-AudioPlayArrayResmp sound2;
-AudioPlayArrayResmp sound3;
-AudioPlayArrayResmp sound4;
-AudioPlayArrayResmp sound5;
-AudioPlayArrayResmp sound6;
-AudioPlayArrayResmp sound7;
-AudioPlayArrayResmp sound8;
-AudioPlayArrayResmp sound9;
-AudioPlayArrayResmp sound10;
-AudioPlayArrayResmp sound11;
-AudioPlayArrayResmp sound12;
-AudioPlayArrayResmp sound13;
-AudioSynthWaveform     waveform1;  // SYNTH
+AudioPlayArrayResmp sound3;  //xy=375,182
+AudioPlayArrayResmp sound4;  //xy=375,182
+AudioPlayArrayResmp sound5;  //xy=375,182
+
+AudioPlayArrayResmp sound6;  //xy=375,182
+AudioPlayArrayResmp sound7;  //xy=375,182
+AudioPlayArrayResmp sound8;  //xy=375,182
+
+AudioPlayArrayResmp sound9;   //xy=375,182
+AudioPlayArrayResmp sound10;  //xy=375,182
+AudioPlayArrayResmp sound11;  //xy=375,182
+AudioPlayArrayResmp sound12;  //xy=375,182
+
+//AudioPlayArrayResmp sound13;  //xy=375,182
+AudioSynthWaveform sound13;   // synth
+AudioSynthWaveform sound14;   // synth
+//AudioPlayArrayResmp sound15;  //xy=375,182
 
 
-AudioEffectEnvelope envelope0;
-AudioEffectEnvelope envelope1;
-AudioEffectEnvelope envelope2;
-AudioEffectEnvelope envelope3;
-AudioEffectEnvelope envelope4;
-AudioEffectEnvelope envelope5;
-AudioEffectEnvelope envelope6;
-AudioEffectEnvelope envelope7;
-AudioEffectEnvelope envelope8;
-AudioEffectEnvelope envelope9;
-AudioEffectEnvelope envelope10;
-AudioEffectEnvelope envelope11;
-AudioEffectEnvelope envelope12;
-AudioEffectEnvelope envelope13;
-AudioEffectEnvelope envelope14;
-
+AudioFilterStateVariable filter0;
+AudioFilterStateVariable filter1;
+AudioFilterStateVariable filter2;
 AudioFilterStateVariable filter3;
+AudioFilterStateVariable filter4;
+AudioFilterStateVariable filter5;
+AudioFilterStateVariable filter6;
+AudioFilterStateVariable filter7;
+AudioFilterStateVariable filter8;
+AudioFilterStateVariable filter9;
+AudioFilterStateVariable filter10;
+AudioFilterStateVariable filter11;
+AudioFilterStateVariable filter12;
+AudioFilterStateVariable filter13;
 AudioFilterStateVariable filter14;
+//AudioFilterStateVariable filter15;
 
-// Create Audio connections between the components
-AudioConnection pc0(sound0, envelope0);  //prev
-AudioConnection pc10(sound1, envelope1);
-AudioConnection pc20(sound2, envelope2);
-AudioConnection pc30(sound3, envelope3);
-AudioConnection pc40(sound4, envelope4);
-AudioConnection pc50(sound5, envelope5);
-AudioConnection pc60(sound6, envelope6);
-AudioConnection pc70(sound7, envelope7);
-AudioConnection pc80(sound8, envelope8);
-AudioConnection pc90(sound9, envelope9);
-AudioConnection pc100(sound10, envelope10);
-AudioConnection pc110(sound11, envelope11);
-AudioConnection pc120(sound12, envelope12);
-AudioConnection pc130(sound13, envelope13);
-AudioConnection pc140(waveform1, envelope14);
+AudioEffectEnvelope envelope0;  //xy=520,177
 
+AudioEffectEnvelope envelope1;  //xy=520,177
+AudioEffectEnvelope envelope2;  //xy=520,177
+AudioEffectEnvelope envelope3;  //xy=520,177
+AudioEffectEnvelope envelope4;  //xy=520,177
 
-AudioMixer4 mix1_a;
-AudioMixer4 mix1_b;
-AudioMixer4 mix1_c;
-AudioMixer4 mix1_d;
+AudioEffectEnvelope envelope5;  //xy=520,177
+AudioEffectEnvelope envelope6;  //xy=520,177
+AudioEffectEnvelope envelope7;  //xy=520,177
+AudioEffectEnvelope envelope8;  //xy=520,177
 
-AudioMixer4 mix2;
-AudioMixer4 mix3;
-AudioMixer4 mix_master;
-AudioOutputAnalog dac;
-AudioOutputI2S headphones;
+AudioEffectEnvelope envelope9;   //xy=520,177
+AudioEffectEnvelope envelope10;  //xy=520,177
+AudioEffectEnvelope envelope11;  //xy=520,177
+AudioEffectEnvelope envelope12;  //xy=520,177
 
-AudioConnection patchCord0(envelope0, 0, mix1_d, 2);  //prev
-AudioConnection patchCord1(envelope1, 0, mix1_a, 0);
-AudioConnection patchCord2(envelope2, 0, mix1_a, 1);
-//AudioConnection patchCord3(envelope3, 0, mix1_a, 2);
-AudioConnection patchCord4(envelope4, 0, mix1_a, 3);
-AudioConnection patchCord5(envelope5, 0, mix1_b, 0);
-AudioConnection patchCord6(envelope6, 0, mix1_b, 1);
-AudioConnection patchCord7(envelope7, 0, mix1_b, 2);
-AudioConnection patchCord8(envelope8, 0, mix1_b, 3);
-AudioConnection patchCord9(envelope9, 0, mix1_c, 0);
-AudioConnection patchCord10(envelope10, 0, mix1_c, 1);
-AudioConnection patchCord11(envelope11, 0, mix1_c, 2);
-AudioConnection patchCord12(envelope12, 0, mix1_c, 3);
-AudioConnection patchCord13(envelope13, 0, mix1_d, 0);
-AudioConnection patchCord16(envelope14, 0, mix1_d, 1);
-AudioConnection pc141(envelope14, 0, filter14, 0);
+AudioEffectEnvelope envelope13;  //xy=520,177
+AudioEffectEnvelope envelope14;  //xy=520,177
+//AudioEffectEnvelope envelope15;  //xy=520,177
 
 
-//filter on 3
-AudioConnection patchCord28(envelope3, 0, filter3, 0);
-AudioConnection patchCord29(filter3, 0, mix1_a, 2);
+AudioMixer4 mixer1;  //xy=736,230
+AudioMixer4 mixer2;  //xy=736,230
+AudioMixer4 mixer3;  //xy=736,230
+AudioMixer4 mixer4;  //xy=736,230
 
-//AudioConnection          patchCord14(drum0, 0, mix1_d, 2);
-//AudioConnection          patchCord15(drum1, 0, mix1_d, 3);
+AudioMixer4 mixer_end;  //xy=736,230
+AudioOutputI2S i2s1;    //xy=1082,325
 
-AudioConnection patchCord17(mix1_a, 0, mix2, 0);
-AudioConnection patchCord18(mix1_b, 0, mix2, 1);
-AudioConnection patchCord19(mix1_c, 0, mix3, 0);
-AudioConnection patchCord20(mix1_d, 0, mix3, 1);
-
-AudioConnection patchCord21(mix2, 0, mix_master, 0);
-AudioConnection patchCord22(mix3, 0, mix_master, 1);
-
-AudioConnection patchCord23(mix_master, 0, headphones, 0);
-AudioConnection patchCord24(mix_master, 0, headphones, 1);
-
-AudioConnection patchCord25(mix_master, dac);
-AudioControlSGTL5000 audioShield;
+AudioConnection patchCord1_1(sound1, envelope1);
+AudioConnection patchCord1_2(envelope1, 0, filter1, 0);
+AudioConnection patchCord1_3(filter1, 0, mixer1, 0);
 
 
-arraysampler _samplers[14];
-static AudioEffectEnvelope *envelopes[] = { &envelope0, &envelope1, &envelope2, &envelope3, &envelope4, &envelope5, &envelope6, &envelope7, &envelope8, &envelope9, &envelope10, &envelope11, &envelope12, &envelope13, &envelope14 };
-static AudioPlayArrayResmp *voices[] = { &sound0, &sound1, &sound2, &sound3, &sound4, &sound5, &sound6, &sound7, &sound8, &sound9, &sound10, &sound11, &sound12, &sound13 };
+AudioConnection patchCord2_1(sound2, envelope2);
+AudioConnection patchCord2_2(envelope2, 0, filter2, 0);
+AudioConnection patchCord2_3(filter2, 0, mixer1, 1);
+
+AudioConnection patchCord3_1(sound3, envelope3);
+AudioConnection patchCord3_2(envelope3, 0, filter3, 0);
+AudioConnection patchCord3_3(filter3, 0, mixer1, 2);
+
+AudioConnection patchCord4_1(sound4, envelope4);
+AudioConnection patchCord4_2(envelope4, 0, filter4, 0);
+AudioConnection patchCord4_3(filter4, 0, mixer1, 3);
 
 
-File myFile;
-File myOrigFile;
-File myDestFile;
-File newSamplePack;
-File sampleFile;
+AudioConnection patchCord5_1(sound5, envelope5);
+AudioConnection patchCord5_2(envelope5, 0, filter5, 0);
+AudioConnection patchCord5_3(filter5, 0, mixer2, 0);
+
+AudioConnection patchCord6_1(sound6, envelope6);
+AudioConnection patchCord6_2(envelope6, 0, filter6, 0);
+AudioConnection patchCord6_3(filter6, 0, mixer2, 1);
+
+AudioConnection patchCord7_1(sound7, envelope7);
+AudioConnection patchCord7_2(envelope7, 0, filter7, 0);
+AudioConnection patchCord7_3(filter7, 0, mixer2, 2);
+
+AudioConnection patchCord8_1(sound8, envelope8);
+AudioConnection patchCord8_2(envelope8, 0, filter8, 0);
+AudioConnection patchCord8_3(filter8, 0, mixer2, 3);
 
 
-int PrevSampleRate = 1;
-int SampleRate[16] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+AudioConnection patchCord9_1(sound9, envelope9);
+AudioConnection patchCord9_2(envelope9, 0, filter9, 0);
+AudioConnection patchCord9_3(filter9, 0, mixer3, 0);
+
+AudioConnection patchCord10_1(sound10, envelope10);
+AudioConnection patchCord10_2(envelope10, 0, filter10, 0);
+AudioConnection patchCord10_3(filter10, 0, mixer3, 1);
+
+AudioConnection patchCord11_1(sound11, envelope11);
+AudioConnection patchCord11_2(envelope11, 0, filter11, 0);
+AudioConnection patchCord11_3(filter11, 0, mixer3, 2);
+
+AudioConnection patchCord12_1(sound12, envelope12);
+AudioConnection patchCord12_2(envelope12, 0, filter12, 0);
+AudioConnection patchCord12_3(filter12, 0, mixer3, 3);
+
+AudioConnection patchCord13_1(sound13, envelope13);
+AudioConnection patchCord13_2(envelope13, 0, filter13, 0);
+AudioConnection patchCord13_3(filter13, 0, mixer4, 0);
+
+AudioConnection patchCord14_1(sound14, envelope14);
+AudioConnection patchCord14_2(envelope14, 0, filter14, 0);
+AudioConnection patchCord14_3(filter14, 0, mixer4, 1);
+/*
+AudioConnection patchCord15_1(sound15, envelope15);
+AudioConnection patchCord15_2(envelope15, 0, filter15, 0);
+AudioConnection patchCord15_3(filter15, 0, mixer4, 2);*/
+
+AudioConnection patchCord0_1(sound0, envelope0);
+AudioConnection patchCord0_2(envelope0, 0, mixer4, 3);
 
 
+AudioConnection patchCordEnd_1(mixer1, 0, mixer_end, 0);
+AudioConnection patchCordEnd_2(mixer2, 0, mixer_end, 1);
+AudioConnection patchCordEnd_3(mixer3, 0, mixer_end, 2);
+AudioConnection patchCordEnd_4(mixer4, 0, mixer_end, 3);
 
 
-void allOff() {
-  envelope1.noteOff();
-  envelope2.noteOff();
-  envelope3.noteOff();
-  envelope4.noteOff();
-  envelope5.noteOff();
-  envelope6.noteOff();
-  envelope7.noteOff();
-  envelope8.noteOff();
-  envelope9.noteOff();
-  envelope10.noteOff();
-  envelope11.noteOff();
-  envelope12.noteOff();
-  envelope13.noteOff();
-  envelope14.noteOff();
-}
+AudioConnection patchCord_end1(mixer_end, 0, i2s1, 0);
+AudioConnection patchCord_end2(mixer_end, 0, i2s1, 1);
+AudioControlSGTL5000 sgtl5000_1;  //xy=887,463
+// GUItool: end automatically generated code

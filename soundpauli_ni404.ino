@@ -465,7 +465,7 @@ void checkMode() {
     for (unsigned int nx = 1; nx <= patternLength; nx++) {  // Start from 1
       for (unsigned int ny = 1; ny <= maxY; ny++) {         // Start from 1
         original[nx][ny][0] = 0;
-        original[nx][ny][1] = 0;
+        original[nx][ny][1] = defaultVelocity;
       }
     }
 
@@ -474,7 +474,7 @@ void checkMode() {
       for (unsigned int ny = 1; ny <= maxY; ny++) {
         if (note[nx][ny][0] != SMP.currentChannel) {
           original[nx][ny][0] = note[nx][ny][0];
-          original[ny][ny][1] = note[nx][ny][1];
+          original[nx][ny][1] = note[nx][ny][1];
         }
       }
     }
@@ -681,7 +681,7 @@ void shiftNotes() {
     for (unsigned int nx = 1; nx <= patternLength; nx++) {  // Start from 1
       for (unsigned int ny = 1; ny <= maxY; ny++) {         // Start from 1
         tmp[nx][ny][0] = 0;
-        tmp[nx][ny][1] = 0;
+        tmp[nx][ny][1] = defaultVelocity;
       }
     }
 
@@ -710,9 +710,9 @@ void shiftNotes() {
         if (original[nx][ny][0] != SMP.currentChannel) {
           note[nx][ny][0] = original[nx][ny][0];
           note[nx][ny][1] = original[nx][ny][1];
-        } else {
+        } else  {
           note[nx][ny][0] = 0;
-          note[nx][ny][1] = 0;
+          note[nx][ny][1] = defaultVelocity;
         }
 
         if (tmp[nx][ny][0] == SMP.currentChannel) {

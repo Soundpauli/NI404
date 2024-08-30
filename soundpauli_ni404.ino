@@ -43,6 +43,7 @@ const unsigned int totalPulsesToWait = pulsesPerBar * barsToWait;
 unsigned int playNoteInterval = 150000;
 unsigned int RefreshTime = 1000 / TargetFPS;
 float marqueePos = maxX;
+bool shifted = false;
 bool movingForward = true;  // Variable to track the direction of movement
 unsigned volatile int lastUpdate;
 volatile unsigned int lastClockTime = 0;
@@ -112,7 +113,7 @@ struct Mode {
 Mode draw = { "DRAW", { 1, 1, 1, 0 }, { maxY, maxPages, maxY, maxfilterResolution }, { 1, 1, 1, maxfilterResolution } };
 Mode singleMode = { "SINGLE", { 1, 1, 1, 0 }, { maxY, maxX, maxY, maxfilterResolution }, { 1, 1, 1, maxfilterResolution } };
 Mode volume_bpm = { "VOLUME_BPM", { 1, 0, 40, 1 }, { maxVolume, 0, maxBPM, maxVolume }, { 1, 0, 100, 9 } };
-Mode noteShift = { "NOTE_SHIFT", { 0, 0, 7, 0 }, { 0, 0, 9, 0 }, { 0, 0, 8, 0 } };
+Mode noteShift = { "NOTE_SHIFT", { 7, 0, 7, 0 }, { 9, 0, 9, 0 }, { 8, 0, 8, 0 } };
 Mode velocity = { "VELOCITY", { 1, 1, 1, 1 }, { 1, 1, maxY, maxY }, { 1, 1, 10, 10 } };
 Mode set_Wav = { "SET_WAV", { 0, 1, 1, 0 }, { 999, maxFolders, 99, 999 }, { 0, 0, 1, 999 } };
 Mode set_SamplePack = { "SET_SAMPLEPACK", { 1, 1, 1, 1 }, { 1, 1, 99, 99 }, { 1, 1, 1, 1 } };
@@ -140,12 +141,13 @@ struct Device {
   unsigned int seek;      // skipped into sample
   unsigned int seekEnd;
   unsigned int smplen;  // overall selected samplelength
-  unsigned int shift;   // note Shift
+  unsigned int shiftX;   // note Shift
+  unsigned int shiftY;   // note Shift
   unsigned int filter_knob[maxFilters];
   unsigned int mute[maxY];
 };
 
-EXTMEM Device SMP = { false, 1, 10, 100, 10, 1, 1, 1, 1, 1, 0, false, 1, 16, 0, 0, 0, 0, { maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution }, {} };
+EXTMEM Device SMP = { false, 1, 10, 100, 10, 1, 1, 1, 1, 1, 0, false, 1, 16, 0, 0, 0, 0, 0, { maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution }, {} };
 
 Encoder encoders[4] = {
   Encoder(22, 5),   // 0, LEFT KNOB  (UP / DOWN, REMOVE TRIGGER, doubleTab: Enter/Exit Single-Sample-Mode)
@@ -235,7 +237,7 @@ void setup() {
   if (CrashReport) {
     Serial.println("\n" __FILE__ " " __DATE__ " " __TIME__);
     Serial.print(CrashReport);
-    delay(10000);
+    delay(1000);
   }
 
   usbMIDI.setHandleClock(myClock);
@@ -264,10 +266,10 @@ void setup() {
   drawNoSD();
   FastLEDclear();
 
-
-  for (unsigned int z = 1; z < maxFiles; z++) {
-    loadSample(samplePackID, z);
-  }
+  loadSamplePack(samplePackID);
+  //for (unsigned int z = 1; z < maxFiles; z++) {
+  //  loadSample(samplePackID, z);
+  //}
 
   for (unsigned int vx = 1; vx < SONG_LEN + 1; vx++) {
     for (unsigned int vy = 1; vy < maxY + 1; vy++) {
@@ -369,7 +371,7 @@ void setup() {
   // turn on the output
   sgtl5000_1.enable();
   sgtl5000_1.volume(0.9);
-  AudioMemory(48);
+  AudioMemory(64);
 
   autoLoad();
 
@@ -448,7 +450,7 @@ void checkMode() {
 
   // Toggle play/pause in draw or single mode
   String playButtonString = isEncoder4Defined ? "0010" : "1001";
-  if ((currentMode == &draw || currentMode == &singleMode) && buttonString == playButtonString) {
+  if ((currentMode == &draw || currentMode == &singleMode || currentMode == &noteShift) && buttonString == playButtonString) {
     togglePlay(isPlaying);
   }
 
@@ -456,7 +458,10 @@ void checkMode() {
   String shiftButtonString = isEncoder4Defined ? "0020" : "2000";
   if (currentMode == &singleMode && buttonString == shiftButtonString) {
 
-    SMP.shift = 8;
+    SMP.shiftX = 8;
+    encoders[2].write(8 * 4);
+
+    SMP.shiftY = 8;
     encoders[2].write(8 * 4);
 
 
@@ -487,7 +492,7 @@ void checkMode() {
     SMP.singleMode = true;
   }
 
-  if (currentMode == &noteShift && buttonString == "0001") {
+  if (currentMode == &noteShift && buttonString == "0100") {
     switchMode(&singleMode);
     SMP.singleMode = true;
   }
@@ -655,28 +660,18 @@ void checkMode() {
 }
 
 void shiftNotes() {
-  if (currentMode->pos[2] != SMP.shift) {
-    serialprint("SHIFT: ");
-    serialprintln(currentMode->pos[2]);
-
+  unsigned int patternLength = lastPage * maxX;
+  if (currentMode->pos[2] != SMP.shiftX) {
     // Determine shift direction (+1 or -1)
-    int shiftDirection = 0;
-    if (currentMode->pos[2] > SMP.shift) {
-      shiftDirection = 1;
+    int shiftDirectionX = 0;
+    if (currentMode->pos[2] > SMP.shiftX) {
+      shiftDirectionX = 1;
     } else {
-      shiftDirection = -1;
+      shiftDirectionX = -1;
     }
-
-    SMP.shift = 8;
+    SMP.shiftX = 8;
     encoders[2].write(8 * 4);
     currentMode->pos[2] = 8;
-
-
-
-
-    // Calculate pattern length
-    unsigned int patternLength = lastPage * maxX;
-
     // Step 1: Clear the tmp array
     for (unsigned int nx = 1; nx <= patternLength; nx++) {  // Start from 1
       for (unsigned int ny = 1; ny <= maxY; ny++) {         // Start from 1
@@ -689,21 +684,62 @@ void shiftNotes() {
     for (unsigned int nx = 1; nx <= patternLength; nx++) {
       for (unsigned int ny = 1; ny <= maxY; ny++) {
         if (note[nx][ny][0] == SMP.currentChannel) {
-          int newpos = nx + shiftDirection;
-
+          int newposX = nx + shiftDirectionX;
+          
           // Handle wrapping around the edges
-          if (newpos < 1) {
-            newpos = patternLength;
-          } else if (newpos > patternLength) {
-            newpos = 1;
+          if (newposX < 1) {
+            newposX = patternLength;
+          } else if (newposX > patternLength) {
+            newposX = 1;
           }
-
-          tmp[newpos][ny][0] = SMP.currentChannel;
-          tmp[newpos][ny][1] = note[nx][ny][1];
+          tmp[newposX][ny][0] = SMP.currentChannel;
+          tmp[newposX][ny][1] = note[nx][ny][1];
         }
       }
     }
+    shifted = true;
+  }
 
+  if (currentMode->pos[0] != SMP.shiftY) {
+    // Determine shift direction (+1 or -1)
+    int shiftDirectionY = 0;
+    if (currentMode->pos[0] > SMP.shiftY) {
+      shiftDirectionY = -1;
+    } else {
+      shiftDirectionY = +1;
+    }
+    encoders[0].write(8 * 4);
+    currentMode->pos[0] = 8;
+    SMP.shiftY = 8;
+    // Step 1: Clear the tmp array
+    for (unsigned int nx = 1; nx <= patternLength; nx++) {  // Start from 1
+      for (unsigned int ny = 1; ny <= maxY; ny++) {         // Start from 1
+        tmp[nx][ny][0] = 0;
+        tmp[nx][ny][1] = defaultVelocity;
+      }
+    }
+
+    // Step 2: Shift notes of the current channel into tmp array
+    for (unsigned int nx = 1; nx <= patternLength; nx++) {
+      for (unsigned int ny = 1; ny <= maxY; ny++) {
+        if (note[nx][ny][0] == SMP.currentChannel) {
+          int newposY = ny + shiftDirectionY;
+          // Handle wrapping around the edges
+          if (newposY < 1) {
+            newposY = maxY;
+          } else if (newposY > maxY) {
+            newposY = 1;
+          }
+          tmp[nx][newposY][0] = SMP.currentChannel;
+          tmp[nx][newposY][1] = note[nx][ny][1];
+        }
+      }
+    }
+    shifted = true;
+  }
+  
+
+  if (shifted){
     // Step 3: Copy original notes of other channels back to the note array
     for (unsigned int nx = 1; nx <= patternLength; nx++) {
       for (unsigned int ny = 1; ny <= maxY; ny++) {
@@ -714,20 +750,15 @@ void shiftNotes() {
           note[nx][ny][0] = 0;
           note[nx][ny][1] = defaultVelocity;
         }
-
         if (tmp[nx][ny][0] == SMP.currentChannel) {
           note[nx][ny][0] = tmp[nx][ny][0];
           note[nx][ny][1] = tmp[nx][ny][1];
         }
       }
     }
-
-
-
-    serialprintln("Shift complete");
+    shifted=false;
   }
 }
-
 
 
 void toggleMute() {
@@ -772,12 +803,8 @@ void playNote() {
     //sprintf(buffer, "%02d - %02d __ %d/%d", beat, pagebeat, SMP.page, lastPage);
     //Serial.println(buffer);
 
-    for (unsigned int b = 1; b < maxFilters + 1; b++) {
-      // needed?
-      // if (SMP.mute[b]) envelopes[b]->noteOff();
-
+    for (unsigned int b = 1; b < maxY + 1; b++) {
       if (note[beat][b][0] > 0 && !SMP.mute[note[beat][b][0]]) {
-
 
         if (note[beat][b][0] < 9) {
           _samplers[note[beat][b][0]].noteEvent(12 * SampleRate[note[beat][b][0]] + b - (note[beat][b][0] + 1), note[beat][b][1], true, false);
@@ -956,7 +983,8 @@ void switchMode(Mode *newMode) {
 }
 
 int reverseMapEncoderValue(unsigned int encoderValue, unsigned int minValue, unsigned int maxValue) {
-  if (currentMode != &set_Wav) {
+  // do not reverse for some modes
+  if (currentMode != &set_Wav && currentMode!= &noteShift) {
     return maxValue - (encoderValue - minValue);
   } else {
 
@@ -1316,12 +1344,12 @@ void loadSample(unsigned int packID, unsigned int sampleID) {
 void loop() {
   // get USB MIdi clock
   usbMIDI.read();
-
-  /*Serial.println("----------------");
+  /*
+  Serial.println("----------------");
   Serial.println(AudioMemoryUsageMax());
   Serial.println(AudioProcessorUsageMax());
   Serial.println("----------------");
-*/
+  */
 
   // get EncoderButtonState
   multiresponseButton1.poll();
@@ -1897,12 +1925,10 @@ void drawStatus() {
 
   if (currentMode == &noteShift) {
     // draw a moving marquee to indicate the note shift mode
-
     for (unsigned int x = 9; x <= maxX; x++) {
       light(x, maxY, CRGB(0, 0, 0));
     }
     light(round(marqueePos), maxY, CRGB(20, 20, 20));
-
     if (movingForward) {
       marqueePos = marqueePos + 0.1;
       if (marqueePos > maxX) {
@@ -2118,7 +2144,6 @@ void savePattern(bool autosave) {
         saveFile.write(note[sdx][sdy][1]);
       }
     }
-
     // Use a unique marker to indicate the end of notes and start of SMP data
     saveFile.write(0xFF);  // Marker byte to indicate end of notes
     saveFile.write(0xFE);  // Marker byte to indicate start of SMP
@@ -2224,7 +2249,7 @@ void loadPattern(bool autoload) {
     serialprintln("seek: " + String(SMP.seek));
     serialprintln("seekEnd: " + String(SMP.seekEnd));
     serialprintln("smplen: " + String(SMP.smplen));
-    serialprintln("shift: " + String(SMP.shift));
+    serialprintln("shiftX: " + String(SMP.shiftX));
 
     serialprintln("filter_knob: ");
     for (unsigned int i = 0; i < maxFilters; i++) {

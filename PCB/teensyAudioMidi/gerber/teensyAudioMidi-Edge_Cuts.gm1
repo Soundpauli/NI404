@@ -1,0 +1,23 @@
+%TF.GenerationSoftware,KiCad,Pcbnew,8.0.2*%
+%TF.CreationDate,2024-10-21T17:53:16+02:00*%
+%TF.ProjectId,teensyAudioMidi,7465656e-7379-4417-9564-696f4d696469,rev?*%
+%TF.SameCoordinates,Original*%
+%TF.FileFunction,Profile,NP*%
+%FSLAX46Y46*%
+G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
+G04 Created by KiCad (PCBNEW 8.0.2) date 2024-10-21 17:53:16*
+%MOMM*%
+%LPD*%
+G01*
+G04 APERTURE LIST*
+%TA.AperFunction,Profile*%
+%ADD10C,0.050000*%
+%TD*%
+G04 APERTURE END LIST*
+D10*
+X30980000Y-25040000D02*
+X190980000Y-25040000D01*
+X190980000Y-80040000D01*
+X30980000Y-80040000D01*
+X30980000Y-25040000D01*
+M02*

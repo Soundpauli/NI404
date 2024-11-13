@@ -1,9 +1,8 @@
-  #define FASTLED_ALLOW_INTERRUPTS 1
+  #define FASTLED_ALLOW_INTERRUPTS 0
   #define AUDIO_SAMPLE_RATE_EXACT 44100.0
-  #define TargetFPS 27
+  #define TargetFPS 60
 
-
-  #include "Arduino.h"
+  typedef uint8_t byte;
   #include <Mapf.h>
   #include <WS2812Serial.h>  // leds
   #define USE_WS2812SERIAL   // leds
@@ -17,12 +16,12 @@
   #include "files.h"
   #include <TeensyPolyphony.h>
   #include "audioinit.h"
-
+  #include "midi-handling.ino"
+  
 
   #define NUM_LEDS 256
   #define DATA_PIN 17
   int lastFile[9] = {0};
-  
   const unsigned int defaultVelocity = 63;
   const unsigned int maxX = 16;
   const unsigned int maxY = 16;
@@ -102,85 +101,6 @@
     587.33   // D5
   };
 
-
-const String usedFiles[13] = {"samples/_1.wav",
-                        "samples/_2.wav",
-                        "samples/_3.wav",
-                        "samples/_4.wav",
-                        "samples/_5.wav",
-                        "samples/_6.wav",
-                        "samples/_7.wav",
-                        "samples/_8.wav",
-                        "samples/_9.wav",
-                        "samples/_10.wav",
-                        "samples/_11.wav",
-                        "samples/_12.wav",
-                        "samples/_13.wav"
-                       };
-
-const int number[10][24][2] = {
-  {{1, 1}, {2, 1}, {3, 1}, {4, 1}, {4, 2}, {1, 3}, {4, 3}, {1, 4}, {4, 4}, {1, 5}, {4, 5}, {1, 6}, {4, 6}, {1, 7}, {4, 7}, {1, 8}, {1, 9}, {2, 9}, {3, 9}, {4, 9}, {1, 2}, {4, 8}, {4, 8}, {4, 8}}, //0
-  {{3, 1}, {2, 2}, {3, 2}, {1, 3}, {3, 3}, {3, 4}, {3, 5}, {3, 6}, {3, 7}, {3, 8}, {2, 9}, {3, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}}, //1
-  {{1, 1}, {2, 1}, {3, 1}, {4, 1}, {4, 2}, {4, 3}, {4, 4}, {1, 5}, {2, 5}, {3, 5}, {4, 5}, {1, 6}, {1, 7}, {1, 8}, {1, 9}, {2, 9}, {3, 9}, {4, 9}, {1, 2}, {4, 8}, {4, 8}, {4, 8}, {4, 8}, {4, 8}}, //2
-  {{1, 1}, {2, 1}, {3, 1}, {4, 1}, {4, 2}, {4, 3}, {4, 4}, {2, 5}, {3, 5}, {4, 5}, {4, 6}, {4, 7}, {4, 8}, {1, 9}, {2, 9}, {3, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}}, //3
-  {{1, 1}, {4, 1}, {1, 2}, {4, 2}, {1, 3}, {4, 3}, {1, 4}, {4, 4}, {1, 5}, {2, 5}, {3, 5}, {4, 5}, {4, 6}, {4, 7}, {4, 8}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}}, //4
-  {{1, 1}, {2, 1}, {3, 1}, {4, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 5}, {3, 5}, {4, 5}, {4, 6}, {4, 7}, {4, 8}, {1, 9}, {2, 9}, {3, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}}, //5
-  {{1, 1}, {2, 1}, {3, 1}, {4, 1}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 5}, {3, 5}, {4, 5}, {1, 6}, {4, 6}, {1, 7}, {4, 7}, {1, 8}, {4, 8}, {1, 9}, {2, 9}, {3, 9}, {4, 9}, {4, 9}, {4, 9}, {4, 9}}, //6
-  {{1, 1}, {2, 1}, {3, 1}, {4, 1}, {4, 2}, {4, 3}, {4, 4}, {4, 5}, {4, 6}, {4, 7}, {4, 8}, {4, 9}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}}, //7
-  {{1, 1}, {2, 1}, {3, 1}, {4, 1}, {4, 2}, {1, 3}, {4, 3}, {1, 4}, {4, 4}, {1, 5}, {2, 5}, {3, 5}, {4, 5}, {1, 6}, {4, 6}, {1, 7}, {4, 7}, {1, 8}, {1, 9}, {2, 9}, {3, 9}, {4, 9}, {1, 2}, {4, 8}}, //8
-  {{1, 1}, {2, 1}, {3, 1}, {4, 1}, {4, 2}, {1, 3}, {4, 3}, {1, 4}, {4, 4}, {1,  5}, {2, 5}, {3, 5}, {4, 5}, {4, 6}, {4, 7}, {1, 9}, {2, 9}, {3, 9}, {4, 9}, {1, 2}, {4, 8}, {4, 8}, {4, 8}, {4, 8}}
-};
-
-const int logo[102][2] = {
-    {1, 2}, {2, 2}, {3, 2}, {4, 2}, {5, 2}, {6, 2}, {7, 2}, {8, 2}, {9, 2},{10, 2},{11, 2},{12, 2},{13, 2},{14, 2},{15, 2},
-    {15, 3}, {15, 4}, {15, 5}, {15, 6}, {15, 7}, {15, 8}, 
-    {14, 8}, {13, 8},{12, 8},{11, 8},
-    {11, 9}, {11, 10}, {11, 11}, {11, 12}, {11, 13},{11, 14},
-    {10, 14}, {9, 14},{9, 13},
-    {9, 12}, {9, 11}, {9, 10}, {9, 9}, {9, 8}, {9, 7}, {9, 6}, {9, 5}, {9, 4},
-    {8, 4}, {7, 4}, {6, 4}, {5, 4}, {4, 4}, {3, 4},
-    {3, 5}, {3, 6}, {3, 7}, {4, 7}, {5, 7}, {6, 7}, {7, 7},
-    {7,8 },{7, 9},{7, 10},{7,11 },{7, 12},{7, 13},{7, 14},
-    {6,14 },{5,14 },{4,14 },{3,14 },{2,14 },{1,14 },
-    {1,13 },{1,12},
-    {2,12 },{3,12 },{4,12 },{5,12 },
-    {5,11 },{5,10 },{5,9 },
-    {4,9 },{3,9 },{2,9 },{1,9 },
-    {1,8 },{1,7 },{1,6 },{1,5 }, {1,4 },{1,3 },
-    {11,4 },{12,4 },{13,4 },
-    {13,5 },{13,6 },{12,6 },
-    {11,6 },{11,5 }
-
-};
- 
-const int icon_samplepack[18][2] = {{2, 1}, {2, 2}, {3, 2}, {2, 3}, {2, 4}, {4, 4}, {1, 5}, {2, 5}, {4, 5}, {5, 5}, {1, 6}, {2, 6}, {4, 6}, {4, 7}, {3, 8}, {4, 8}, {3, 9}, {4, 9}};
-const int icon_sample[19][2] = {{3, 1}, {3, 2}, {3, 3}, {4, 3}, {3, 5}, {4, 2}, {5, 3}, {3, 4}, {3, 5}, {3, 6}, {1, 7}, {2, 7}, {3, 7}, {1, 8}, {2, 8}, {3, 8}, {1, 9}, {2, 9}, {3, 9}};
-const int icon_loadsave[20][2] = {{3, 1}, {3, 2}, {3, 3}, {3, 4}, {1, 5}, {2, 5}, {3, 5}, {4, 5}, {5, 5}, {2, 6}, {3, 6}, {4, 6}, {3, 7}, {1, 8}, {5, 8}, {1, 9}, {2, 9}, {3, 9}, {4, 9}, {5, 9}};
-const int icon_bpm[38][2] = {{2, 11}, {3, 11}, {4, 11}, {7, 11}, {8, 11}, {9, 11}, {11, 11}, {15, 11}, {2, 12}, {4, 12}, {7, 12}, {9, 12}, {11, 12}, {12, 12}, {14, 12}, {15, 12}, {2, 13}, {3, 13}, {4, 13}, {5, 13}, {7, 13}, {8, 13}, {9, 13}, {11, 13}, {13, 13}, {15, 13}, {2, 14}, {5, 14}, {7, 14}, {11, 14}, {15, 14}, {2, 15}, {3, 15}, {4, 15}, {5, 15}, {7, 15}, {11, 15}, {15, 15}};
-const int helper_load[3][2] = {{1, 15}, {2, 15}, {3, 15}}; 
-const int helper_folder[5][2] = { {6, 13}, {6, 14}, {6, 15}, {7, 14}, {7, 15}};
-const int helper_seek[2][2] = {{10, 15}, {10, 14}}; 
-
-const int helper_vol[5][2] = {{9, 13},  {11, 13}, {10, 15}, {9, 14}, {11, 14}};
-//for 3 encoders:
-const int helper_vol2[5][2] = {{6, 13},  {8, 13}, {7, 15}, {6, 14}, {8, 14}};
-
-const int helper_bpm[7][2] = {{13, 13}, {13, 14}, {13, 15}, {14, 14}, {15, 14}, {14, 15}, {15, 15}};
-
-
-const int helper_save[3][2] =  {{5, 15}, {6, 15}, {7, 15}};
-const int helper_select[3][2] = {{13, 15}, {14, 15}, {15, 15}}; 
-
-const int noSD[48][2] =
-{ {2, 4}, {3, 4}, {4, 4}, {5, 4}, {7, 4}, {8, 4}, {9, 4}, {12, 4}, {13, 4}, {14, 4}, {15, 4},
-  {2, 5}, {5, 5}, {7, 5}, {9, 5}, {10, 5}, {12, 5}, {15, 5},
-  {2, 6}, {7, 6}, {10, 6}, {15, 6},
-  {2, 7}, {3, 7}, {4, 7}, {5, 7}, {7, 7}, {10, 7}, {13, 7}, {14, 7}, {15, 7},
-  {5, 8}, {7, 8}, {10, 8}, {13, 8},
-  {2, 9}, {5, 9}, {7, 9}, {9, 9}, {10, 9},
-  {2, 10}, {3, 10}, {4, 10}, {5, 10}, {7, 10}, {8, 10}, {9, 10}, {13, 10}
-};
-
   CRGB leds[NUM_LEDS];
 
   struct Mode {
@@ -215,7 +135,7 @@ const int noSD[48][2] =
     unsigned int edit;      // edit mode or plaing mode?
     unsigned int file;      // current selected save/load id
     unsigned int pack;      // current selected samplepack id
-    unsigned int wav[maxY][2];       // current selected sample id
+    unsigned int wav;       // current selected sample id
     unsigned int folder;    // current selected folder id
     bool activeCopy;        // is copy/paste active?
     unsigned int x;         // cursor X
@@ -229,9 +149,7 @@ const int noSD[48][2] =
     unsigned int mute[maxY];
   };
 
-
-
-  EXTMEM Device SMP = { false, 1, 10, 100, 10, 1, 1, 1, 1, {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 0, false, 1, 16, 0, 0, 0, 0, 0, { maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution }, {} };
+  EXTMEM Device SMP = { false, 1, 10, 100, 10, 1, 1, 1, 1, 1, 0, false, 1, 16, 0, 0, 0, 0, 0, { maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution }, {} };
 
   Encoder encoders[4] = {
     Encoder(22, 5),   // 0, LEFT KNOB  (UP / DOWN, REMOVE TRIGGER, doubleTab: Enter/Exit Single-Sample-Mode)
@@ -261,19 +179,6 @@ const int noSD[48][2] =
 
   void serialprintln(...) {
   }
-
-
-
-  void resetAllFilters() {
-    for (unsigned int i = 0; i < maxFilters; i++) {
-      filters[i]->frequency(0);
-      filters[i]->resonance(0);
-    }
-  }
-
-
-
-
 
   void allOff() {
     for (AudioEffectEnvelope *envelope : envelopes) {
@@ -328,6 +233,7 @@ const int noSD[48][2] =
   }
 
   void setup() {
+
     delay(200);
     Serial.begin(115200);
 
@@ -359,24 +265,24 @@ const int noSD[48][2] =
     pinMode(16, INPUT_PULLDOWN);
     FastLED.addLeds<WS2812SERIAL, DATA_PIN, BRG>(leds, NUM_LEDS);
     showIntro();
-    
     serialprint("Initializing SD card...");
     drawNoSD();
 
-    //set maxFiles in folder and show loading...
+      //set maxFiles in folder
     for (int f = 0; f <= maxFolders; f++) {
-      FastLEDclear();
-      
       for (unsigned int i = 1; i < 99; i++) {
         char OUTPUTf[50];
-          sprintf(OUTPUTf, "samples/%d/_%d.wav", f, i+(f*100));
-        if (SD.exists(OUTPUTf)) {
-          lastFile[f] = i+(f*100);
-          }   
+        sprintf(OUTPUTf, "samples/%d/_%d.wav", f, i+(f*100));
+        if (SD.exists(OUTPUTf)) { lastFile[f] = i+(f*100);}
       }
-      drawLoadingBar(1,999,lastFile[f],col_Folder[f], CRGB(15,15,55));
     }
+
+    FastLEDclear();
+
     loadSamplePack(samplePackID);
+    //for (unsigned int z = 1; z < maxFiles; z++) {
+    //  loadSample(samplePackID, z);
+    //}
 
     for (unsigned int vx = 1; vx < SONG_LEN + 1; vx++) {
       for (unsigned int vy = 1; vy < maxY + 1; vy++) {
@@ -538,7 +444,7 @@ const int noSD[48][2] =
     };
 
     for (const auto &mapping : mappings) {
-      if (strcmp(static_cast<const char *>(s), mapping.input) == 0) {
+      if (strcmp(s, mapping.input) == 0) {
         buttons[mapping.buttonIndex] = mapping.value;
         break;
       }
@@ -699,17 +605,11 @@ const int noSD[48][2] =
 
     // Search Wave + Load + Exit
     if ((currentMode == &singleMode) && buttonString == "2200") {
-      //set loaded sample
+      //toDO: set current encoder to loaded file
+
       switchMode(&set_Wav);
-      currentMode->pos[2] = SMP.wav[SMP.currentChannel][0];
-      SMP.wav[SMP.currentChannel][1] = SMP.wav[SMP.currentChannel][0];
-      encoders[2].write((SMP.wav[SMP.currentChannel][0] * 4)-1);
     } else if ((currentMode == &set_Wav) && buttonString == "1000") {
-      //set SMP.wav[currentChannel][0] and [1] to current file
-      SMP.wav[SMP.currentChannel][0] = SMP.wav[SMP.currentChannel][1];
-      currentMode->pos[2] = SMP.wav[SMP.currentChannel][0];
       loadWav();
-      autoSave();
     } else if ((currentMode == &set_Wav) && buttonString == "0001") {
       switchMode(&singleMode);
       SMP.singleMode = true;
@@ -1381,40 +1281,18 @@ const int noSD[48][2] =
     }
   }
 
-  
-  void drawLoadingBar(int minval, int maxval, int currentval, CRGB color, CRGB fontColor) {
-    int ypos = 3;
-    
-    int barwidth = mapf(currentval, minval, maxval, 0, maxX);
-    for (int x = 1; x <= maxX; x++) {
-       light(x, ypos-1, CRGB(5, 5, 5));
-      // light(x, ypos+2, CRGB(5, 5, 5));
-    }
-    //draw the border-ends
-    light(1, ypos, CRGB(5, 5, 5));
-    //light(1, ypos+1, CRGB(5, 5, 5));
-    light(maxX, ypos, CRGB(5, 5, 5));
-    //light(maxX, ypos+1, CRGB(5, 5, 5));
-    
-    for (int x = 2; x < maxX; x++) {
-      for (int y = 0; y <= 1; y++) {
-          if (x < barwidth) {
-            light(x, ypos+y, color);
-          } else {
-            light(x, ypos+y, CRGB(0, 0, 0));
-          }
-      }
-
-    }
-    showNumber(currentval, fontColor, 0);  
-  }
-
-
-  
   void loadSample(unsigned int packID, unsigned int sampleID) {
     serialprint("loading");
     serialprintln(packID);
     drawNoSD();
+
+    int yposLoader = sampleID + 1;
+    if (sampleID > maxY)
+      yposLoader = 2;
+    for (unsigned int f = 1; f < (maxX / 2) + 1; f++) {
+      light(f, yposLoader, CRGB(20, 20, 0));
+    }
+    FastLEDshow();
 
     char OUTPUTf[50];
     sprintf(OUTPUTf, "%d/%d.wav", packID, sampleID);
@@ -1430,11 +1308,8 @@ const int noSD[48][2] =
       serialprintln(OUTPUTf);
       // mute the channel
       SMP.mute[sampleID] = true;
+
       return;
-    } else{
-      //unmute the channel
-      SMP.mute[sampleID] = false;
-      
     }
 
     usedFiles[sampleID - 1] = OUTPUTf;
@@ -1486,10 +1361,15 @@ const int noSD[48][2] =
       _samplers[sampleID].removeAllSamples();
       _samplers[sampleID].addSample(36, (int16_t *)sampled[sampleID] + 2, (int)i - 120, 1);
     }
+
+    for (unsigned int f = 1; f < maxX + 1; f++) {
+      light(f, yposLoader, col[sampleID]);
+
+      FastLEDshow();
+    }
   }
 
   void loop() {
-    
     // get USB MIdi clock
     usbMIDI.read();
     /*
@@ -1522,8 +1402,6 @@ const int noSD[48][2] =
       showSamplePack();
     } else if (currentMode->name == "SET_WAV") {
       showWave();
-      
-
     } else if (currentMode->name == "NOTE_SHIFT") {
       shiftNotes();
       drawBase();
@@ -1560,9 +1438,7 @@ const int noSD[48][2] =
     }
 
     FastLEDshow();  // draw!
-    yield();
-    delay(5);       // otherwise, the audio lib crashes after 1-60sec //(1 is good if 720MHZ overclock!!!!)
-    
+    delay(5);       // otherwise, the audio lib crashes after 1-60sec
   }
 
   /******************************************************************************************************/
@@ -1784,18 +1660,15 @@ const int noSD[48][2] =
     SMP.smplen = 0;
     SMP.seekEnd = 0;
     EEPROM.put(0, pack);
-
-    for (unsigned int z = 1; z < maxFiles; z++) {
-      FastLEDclear();
-      showIcons("icon_sample", CRGB(20, 20, 20));
-      drawLoadingBar(1,maxFiles,z,col[z],CRGB(15,55,15));
+    for (unsigned int z = 1; z <= maxFiles; z++) {
       loadSample(pack, z);
-      
     }
     char OUTPUTf[50];
     sprintf(OUTPUTf, "%d/%d.wav", pack, 1);
-
-
+    if (SD.exists(OUTPUTf)) {
+      showIcons("icon_samplepack", CRGB(100, 0, 100));
+      showNumber(pack, CRGB(100, 0, 100), 0);
+    }
     switchMode(&draw);
   }
 
@@ -1808,10 +1681,9 @@ const int noSD[48][2] =
     delay(500);
     for (unsigned int i = 0; i < sizeof(usedFiles) / sizeof(usedFiles[0]); i++) {
       for (unsigned int f = 1; f < (maxY / 2) + 1; f++) {
-        light(i + 1, f, CRGB(4, 0, 0));
+        light(i + 1, f, CRGB(20, 0, 0));
       }
-      showIcons("icon_samplepack", CRGB(20, 20, 20));
-      FastLED.show();
+      FastLEDshow();
 
       if (SD.exists(usedFiles[i].c_str())) {
         File saveFilePack = SD.open(usedFiles[i].c_str());
@@ -1861,18 +1733,17 @@ int getFileNumber(int value) {
 
 
   void showWave() {
-    
     File sampleFile;
     drawNoSD();
 
     FastLEDclear();
-    if (SMP.wav[SMP.currentChannel][1] < 100)
+    if (SMP.wav < 100)
       showIcons("icon_sample", col[SMP.y - 1]);
     showIcons("helper_select", col[SMP.y - 1]);
     showIcons("helper_load", CRGB(0, 20, 0));
     showIcons("helper_seek", CRGB(10, 0, 0));
     showIcons("helper_folder", CRGB(10, 10, 0));
-    showNumber( SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
+    showNumber( SMP.wav, col_Folder[getFolderNumber(SMP.wav)], 0);
     displaySample(SMP.smplen);
   
   
@@ -1881,9 +1752,9 @@ int getFileNumber(int value) {
       //change FOLDER
       SMP.folder = currentMode->pos[1];
       Serial.println("Folder: " + String(SMP.folder - 1));
-      SMP.wav[SMP.currentChannel][1] = ((SMP.folder-1)*100);
-      Serial.println("wav: " + String(SMP.wav[SMP.currentChannel][1]));
-      encoders[1].write((SMP.wav[SMP.currentChannel][1] * 4)-1);
+      SMP.wav = ((SMP.folder-1)*100);
+      Serial.println("wav: " + String(SMP.wav));
+      encoders[2].write((SMP.wav * 4)-1);
     }
 
     // ENDPOSITION SAMPLE
@@ -1900,20 +1771,20 @@ int getFileNumber(int value) {
 
         char OUTPUTf[50];
         
-        sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]));
+        sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP.wav), getFileNumber(SMP.wav));
 
         if (SD.exists(OUTPUTf)) {
           showIcons("helper_select", col[SMP.y - 1]);
           showIcons("helper_load", CRGB(0, 20, 0));
           showIcons("helper_seek", CRGB(10, 0, 0));
           showIcons("helper_folder", CRGB(10, 30, 0));
-          showNumber(SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
-          if (!sampleLengthSet) previewSample(getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]), false,false);
+          showNumber(SMP.wav, col_Folder[getFolderNumber(SMP.wav)], 0);
+          if (!sampleLengthSet) previewSample(getFolderNumber(SMP.wav), getFileNumber(SMP.wav), false,false);
         } else {
           showIcons("helper_select", col[SMP.y - 1]);
           showIcons("helper_load", CRGB(0, 0, 0));
           showIcons("helper_folder", CRGB(10, 10, 0));
-          showNumber( SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
+          showNumber( SMP.wav, col_Folder[getFolderNumber(SMP.wav)], 0);
         }
 
         sampleLengthSet = false;
@@ -1931,27 +1802,27 @@ int getFileNumber(int value) {
       }
 
       char OUTPUTf[50];
-      sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]));
+      sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP.wav), getFileNumber(SMP.wav));
       if (SD.exists(OUTPUTf)) {
         showIcons("helper_select", col[SMP.y - 1]);
         showIcons("helper_load", CRGB(0, 20, 0));
         showIcons("helper_folder", CRGB(10, 30, 0));
-        showNumber( SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
-        previewSample(getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]), false,false);
+        showNumber( SMP.wav, col_Folder[getFolderNumber(SMP.wav)], 0);
+        previewSample(getFolderNumber(SMP.wav), getFileNumber(SMP.wav), false,false);
       } else {
         showIcons("helper_select", col[SMP.y - 1]);
         showIcons("helper_load", CRGB(0, 0, 0));
         showIcons("helper_folder", CRGB(10, 10, 0));
-        showNumber( SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
+        showNumber( SMP.wav, col_Folder[getFolderNumber(SMP.wav)], 0);
       }
     }
 
     // SAMPLEFILE
-    if (currentMode->pos[2] != SMP.wav[SMP.currentChannel][1]) {
+    if (currentMode->pos[2] != SMP.wav) {
       
       sampleIsLoaded = false;
-      SMP.wav[SMP.currentChannel][1] = currentMode->pos[2];
-      Serial.println("File: " + String(getFolderNumber(SMP.wav[SMP.currentChannel][1])) + " / " + String(getFileNumber(SMP.wav[SMP.currentChannel][1])));
+      SMP.wav = currentMode->pos[2];
+      Serial.println("File: " + String(getFolderNumber(SMP.wav)) + " / " + String(getFileNumber(SMP.wav)));
 
       // reset SEEK and stop sample playing
       SMP.smplen = 0;
@@ -1963,10 +1834,10 @@ int getFileNumber(int value) {
       if (sampleFile) {
         sampleFile.seek(0);
       }
-      if (SMP.wav[SMP.currentChannel][1] < 100) showIcons("icon_sample", col[SMP.y - 1]);
+      if (SMP.wav < 100) showIcons("icon_sample", col[SMP.y - 1]);
 
       char OUTPUTf[50];
-      sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]));
+      sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP.wav), getFileNumber(SMP.wav));
       serialprintln("------");
       serialprintln(OUTPUTf);
       
@@ -1974,47 +1845,58 @@ int getFileNumber(int value) {
      
 
 
-    if (SMP.wav[SMP.currentChannel][1] < getFolderNumber(SMP.wav[SMP.currentChannel][1]+1) * 100) {
+    if (SMP.wav < getFolderNumber(SMP.wav+1) * 100) {
       Serial.print("exceeded first number of folder ");
-      Serial.println(getFolderNumber(SMP.wav[SMP.currentChannel][1]+1));
-      SMP.wav[SMP.currentChannel][1] = lastFile[getFolderNumber(SMP.wav[SMP.currentChannel][1])];
-      SMP.folder = getFolderNumber(SMP.wav[SMP.currentChannel][1]);
+      Serial.println(getFolderNumber(SMP.wav+1));
+      SMP.wav = lastFile[getFolderNumber(SMP.wav)];
+      SMP.folder = getFolderNumber(SMP.wav);
       //write encoder
-       encoders[2].write((SMP.wav[SMP.currentChannel][1] * 4)-1);
+       encoders[2].write((SMP.wav * 4)-1);
        encoders[1].write((SMP.folder * 4)-1);
      }
 
 
- if ( lastPreviewedSample[getFolderNumber(SMP.wav[SMP.currentChannel][1])] < SMP.wav[SMP.currentChannel][1]){
-     if (SMP.wav[SMP.currentChannel][1] > lastFile[getFolderNumber(SMP.wav[SMP.currentChannel][1])]) {
+ if ( lastPreviewedSample[getFolderNumber(SMP.wav)] < SMP.wav){
+     if (SMP.wav > lastFile[getFolderNumber(SMP.wav)]) {
       Serial.print("exceeding last file number of folder ");
-      Serial.println(getFolderNumber(SMP.wav[SMP.currentChannel][1]));
-      SMP.wav[SMP.currentChannel][1] = ((getFolderNumber(SMP.wav[SMP.currentChannel][1])+1)*100);
-      SMP.folder = getFolderNumber(SMP.wav[SMP.currentChannel][1]+1);
+      Serial.println(getFolderNumber(SMP.wav));
+      SMP.wav = ((getFolderNumber(SMP.wav)+1)*100);
+      SMP.folder = getFolderNumber(SMP.wav+1);
       //write encoder
-      encoders[2].write((SMP.wav[SMP.currentChannel][1] * 4)-1);
+      encoders[2].write((SMP.wav * 4)-1);
       encoders[1].write((SMP.folder * 4)-1);
      }
      }
 
-        lastPreviewedSample[getFolderNumber(SMP.wav[SMP.currentChannel][1])] = SMP.wav[SMP.currentChannel][1];
+        lastPreviewedSample[getFolderNumber(SMP.wav)] = SMP.wav;
         showIcons("helper_select", col[SMP.y - 1]);
         showIcons("helper_load", CRGB(0, 20, 0));
         showIcons("helper_folder", CRGB(10, 30, 0));
-        showNumber(SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
-        previewSample(getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]), true, true);
+        showNumber(SMP.wav, col_Folder[getFolderNumber(SMP.wav)], 0);
+        previewSample(getFolderNumber(SMP.wav), getFileNumber(SMP.wav), true, true);
         sampleIsLoaded = true;
-      
+        
+      //} else {
+      /*
+        encoders[2].write(((lastPreviewedSample[SMP.folder]) * 4) - 1);
+
+        showIcons("helper_select", col[SMP.y - 1]);
+        showIcons("helper_load", CRGB(0, 0, 0));
+        showIcons("helper_folder", CRGB(10, 10, 0));
+        showNumber(((SMP.folder - 1) * 100) + SMP.wav, col_Folder[SMP.folder - 1], 0);
+       
+       }
+       */
     }
   }
 
   void showIntro() {
     FastLED.clear();
     FastLED.show();
-    for (int gx = 0; gx < 102; gx++) {
-      light(logo[gx][0], maxY - logo[gx][1], CRGB(150, 150, 150));
+    for (int gx = 0; gx < 72; gx++) {
+      light(logo[gx][0], maxY - logo[gx][1], CRGB(50, 50, 50));
       FastLED.show();
-      delay(20);
+      delay(10);
     }
     delay(200);
 
@@ -2029,19 +1911,15 @@ int getFileNumber(int value) {
     int bright = 100;
     for (int y = -15; y < 3; y++) {
       FastLED.clear();
-      
-      showNumber(101, CRGB(0, 0, 15), y-2);
-      showNumber(101, CRGB(10, 5, 0), y-1);
-      showNumber(101, CRGB(15, 0, 0), y);
+      showNumber(404, CRGB(100, 100, 100), y);
       FastLED.show();
       delay(50);
     }
-    delay(200);
+    delay(800);
     for (int y = 3; y < 16; y++) {
       FastLED.clear();
-      showNumber(101, CRGB(0, 0, 15), y-2);
-      showNumber(101, CRGB(10, 5, 0), y-1);
-      showNumber(101, CRGB(15, 0, 0), y);
+
+      showNumber(404, CRGB(100, 100, 100), y);
       FastLED.show();
       delay(50);
     }
@@ -2318,8 +2196,8 @@ int getFileNumber(int value) {
   }
 
   void loadWav() {
-    Serial.println("Loading Wave :" + String(SMP.wav[SMP.currentChannel][1]));
-    loadSample(0, SMP.wav[SMP.currentChannel][1]);
+    Serial.println("Loading Wave :" + String(SMP.wav));
+    loadSample(0, SMP.wav);
     switchMode(&singleMode);
     SMP.singleMode = true;
   }
@@ -2446,7 +2324,7 @@ int getFileNumber(int value) {
       serialprintln("edit: " + String(SMP.edit));
       serialprintln("file: " + String(SMP.file));
       serialprintln("pack: " + String(SMP.pack));
-      serialprintln("wav: " + String(SMP.wav[SMP.currentChannel][1]));
+      serialprintln("wav: " + String(SMP.wav));
       serialprintln("folder: " + String(SMP.folder));
       serialprintln("activeCopy: " + String(SMP.activeCopy));
       serialprintln("x: " + String(SMP.x));
@@ -2498,110 +2376,3 @@ int getFileNumber(int value) {
 
 
   
-void handleStop() {
-  // This function is called when a MIDI STOP message is received
-  isPlaying = false;
-  pulseCount = 0;
-  AudioMemoryUsageMaxReset();
-  deleteActiveCopy();
-  envelope0.noteOff();
-  allOff();
-  autoSave();
-  beat = 1;
-  pagebeat = 1;
-  SMP.page = 1;
-  waitForFourBars = false;
-}
-
-
-//receive Midi notes and velocity, map to note array. if not playing, play the note
-void handleNoteOn(uint8_t channel, uint8_t pitch, uint8_t velocity) {
-  // return if out of range
-  if (SMP.y - 1 < 1 || SMP.y - 1 > maxFiles) return;
-
-  //  envelopes[SMP.y - 1]->release(11880 / 2);
-  unsigned int livenote = SMP.y + pitch - 60;  // set Base to C3
-  Serial.println(livenote);
-
-  // fake missing octaves (only 16 notes visible, so step up/down an octave!)
-  if (livenote > 16) livenote -= 12;
-  if (livenote < 1) livenote += 12;
-
-  if (livenote >= 1 && livenote <= 16) {
-    light(SMP.x, livenote, CRGB(0, 0, 255));
-    FastLEDshow();
-    Serial.println(SMP.y - 1);
-    _samplers[SMP.y - 1].noteEvent(((SampleRate[SMP.y - 1] * 12) + pitch - 60), velocity * 8, true, false);
-    if (isPlaying) {
-      if (!SMP.mute[SMP.y - 1]) {
-        note[beat][livenote][0] = SMP.y - 1;
-        note[beat][livenote][1] = velocity;
-      }
-    }
-  }
-}
-
-void handleNoteOff(uint8_t channel, uint8_t pitch, uint8_t velocity) {
-  Serial.print("Note Off, ch=");
-  /*if (isPlaying) {
-    if (pitch > 0 && pitch < 17) {
-      if (note[beat][pitch][0] == SMP.currentChannel) {
-        note[beat][pitch][0] = 0;
-        light(pitch, SMP.currentChannel + 1, CRGB(0, 0, 0));
-        FastLEDshow();
-      }
-    }
-  } else {
-    if (pitch > 0 && pitch < 17) {
-      if (note[beat][pitch][0] == SMP.curr  entChannel) {
-        note[beat][pitch][0] = 0;
-        light(pitch, SMP.currentChannel + 1, CRGB(0, 0, 0));
-        FastLEDshow();
-      }
-    }
-  }*/
-}
-
-void handleStart() {
-  // This function is called when a MIDI Start message is received
-  waitForFourBars = true;
-  pulseCount = 0;  // Reset pulse count on start
-  Serial.println("MIDI Start Received");
-}
-
-
-void handleTimeCodeQuarterFrame(uint8_t data) {
-  // This function is called when a MIDI Start message is received
-  Serial.println("MIDI TimeCodeQuarterFrame Received");
-}
-
-
-
-void handleSongPosition(uint16_t beats) {
-  // This function is called when a Song Position Pointer message is received
-  Serial.print("Song Position Pointer Received: ");
-  Serial.println(beats);
-}
-
-
-void myClock() {
-  if (waitForFourBars) pulseCount++;
-  unsigned int now = millis();
-  if (lastClockTime > 0) {
-    totalInterval += now - lastClockTime;
-    clockCount++;
-
-    if (clockCount >= numPulsesForAverage) {
-      float averageInterval = totalInterval / (float)numPulsesForAverage;
-      float bpm = 60000.0 / (averageInterval * 24);
-      //floor bpm
-      SMP.bpm = round(bpm);
-      Serial.println(SMP.bpm);
-
-      playTimer.update(((60 * 1000 / SMP.bpm) / 4) * 1000);
-      clockCount = 0;
-      totalInterval = 0;
-    }
-  }
-  lastClockTime = now;
-}

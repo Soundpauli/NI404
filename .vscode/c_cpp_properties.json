@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/Users/jank/Documents/Arduino/libraries/**",
+                "/Users/jank/Library/Arduino15/packages/teensy/hardware/avr/1.59.0/cores/teensy4/**",
+                "/Users/jank/Library/Arduino15/packages/teensy/hardware/avr/1.59.0/libraries/**",
+                "/Users/jank/Library/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino/**"
+            ],
+            "defines": ["USB_MIDI_SERIAL"],
+            "macFrameworkPath": [
+                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-arm64"
+        }
+    ],
+    "version": 4
+}

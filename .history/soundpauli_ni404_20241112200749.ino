@@ -699,17 +699,11 @@ const int noSD[48][2] =
 
     // Search Wave + Load + Exit
     if ((currentMode == &singleMode) && buttonString == "2200") {
-      //set loaded sample
+      //toDO: set current encoder to loaded file
+
       switchMode(&set_Wav);
-      currentMode->pos[2] = SMP.wav[SMP.currentChannel][0];
-      SMP.wav[SMP.currentChannel][1] = SMP.wav[SMP.currentChannel][0];
-      encoders[2].write((SMP.wav[SMP.currentChannel][0] * 4)-1);
     } else if ((currentMode == &set_Wav) && buttonString == "1000") {
-      //set SMP.wav[currentChannel][0] and [1] to current file
-      SMP.wav[SMP.currentChannel][0] = SMP.wav[SMP.currentChannel][1];
-      currentMode->pos[2] = SMP.wav[SMP.currentChannel][0];
       loadWav();
-      autoSave();
     } else if ((currentMode == &set_Wav) && buttonString == "0001") {
       switchMode(&singleMode);
       SMP.singleMode = true;
@@ -1522,7 +1516,9 @@ const int noSD[48][2] =
       showSamplePack();
     } else if (currentMode->name == "SET_WAV") {
       showWave();
+      //set the encoder to the SMP..wav[SMP.currentChannel][1] of the current channel
       
+      encoders[3].write(SMP..wav[SMP.currentChannel][1] * 4);
 
     } else if (currentMode->name == "NOTE_SHIFT") {
       shiftNotes();
@@ -1861,18 +1857,21 @@ int getFileNumber(int value) {
 
 
   void showWave() {
-    
+    Serial.print(SMP.currentChannel);
+    Serial.print(" = ");
+    Serial.println(SMP..wav[SMP.currentChannel][1]);
+
     File sampleFile;
     drawNoSD();
 
     FastLEDclear();
-    if (SMP.wav[SMP.currentChannel][1] < 100)
+    if (SMP..wav[SMP.currentChannel][1] < 100)
       showIcons("icon_sample", col[SMP.y - 1]);
     showIcons("helper_select", col[SMP.y - 1]);
     showIcons("helper_load", CRGB(0, 20, 0));
     showIcons("helper_seek", CRGB(10, 0, 0));
     showIcons("helper_folder", CRGB(10, 10, 0));
-    showNumber( SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
+    showNumber( SMP..wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP..wav[SMP.currentChannel][1])], 0);
     displaySample(SMP.smplen);
   
   
@@ -1881,9 +1880,9 @@ int getFileNumber(int value) {
       //change FOLDER
       SMP.folder = currentMode->pos[1];
       Serial.println("Folder: " + String(SMP.folder - 1));
-      SMP.wav[SMP.currentChannel][1] = ((SMP.folder-1)*100);
-      Serial.println("wav: " + String(SMP.wav[SMP.currentChannel][1]));
-      encoders[1].write((SMP.wav[SMP.currentChannel][1] * 4)-1);
+      SMP..wav[SMP.currentChannel][1] = ((SMP.folder-1)*100);
+      Serial.println("wav: " + String(SMP..wav[SMP.currentChannel][1]));
+      encoders[2].write((SMP..wav[SMP.currentChannel][1] * 4)-1);
     }
 
     // ENDPOSITION SAMPLE
@@ -1900,20 +1899,20 @@ int getFileNumber(int value) {
 
         char OUTPUTf[50];
         
-        sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]));
+        sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP..wav[SMP.currentChannel][1]), getFileNumber(SMP..wav[SMP.currentChannel][1]));
 
         if (SD.exists(OUTPUTf)) {
           showIcons("helper_select", col[SMP.y - 1]);
           showIcons("helper_load", CRGB(0, 20, 0));
           showIcons("helper_seek", CRGB(10, 0, 0));
           showIcons("helper_folder", CRGB(10, 30, 0));
-          showNumber(SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
-          if (!sampleLengthSet) previewSample(getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]), false,false);
+          showNumber(SMP..wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP..wav[SMP.currentChannel][1])], 0);
+          if (!sampleLengthSet) previewSample(getFolderNumber(SMP..wav[SMP.currentChannel][1]), getFileNumber(SMP..wav[SMP.currentChannel][1]), false,false);
         } else {
           showIcons("helper_select", col[SMP.y - 1]);
           showIcons("helper_load", CRGB(0, 0, 0));
           showIcons("helper_folder", CRGB(10, 10, 0));
-          showNumber( SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
+          showNumber( SMP..wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP..wav[SMP.currentChannel][1])], 0);
         }
 
         sampleLengthSet = false;
@@ -1931,27 +1930,27 @@ int getFileNumber(int value) {
       }
 
       char OUTPUTf[50];
-      sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]));
+      sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP..wav[SMP.currentChannel][1]), getFileNumber(SMP..wav[SMP.currentChannel][1]));
       if (SD.exists(OUTPUTf)) {
         showIcons("helper_select", col[SMP.y - 1]);
         showIcons("helper_load", CRGB(0, 20, 0));
         showIcons("helper_folder", CRGB(10, 30, 0));
-        showNumber( SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
-        previewSample(getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]), false,false);
+        showNumber( SMP..wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP..wav[SMP.currentChannel][1])], 0);
+        previewSample(getFolderNumber(SMP..wav[SMP.currentChannel][1]), getFileNumber(SMP..wav[SMP.currentChannel][1]), false,false);
       } else {
         showIcons("helper_select", col[SMP.y - 1]);
         showIcons("helper_load", CRGB(0, 0, 0));
         showIcons("helper_folder", CRGB(10, 10, 0));
-        showNumber( SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
+        showNumber( SMP..wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP..wav[SMP.currentChannel][1])], 0);
       }
     }
 
     // SAMPLEFILE
-    if (currentMode->pos[2] != SMP.wav[SMP.currentChannel][1]) {
+    if (currentMode->pos[2] != SMP..wav[SMP.currentChannel][1]) {
       
       sampleIsLoaded = false;
-      SMP.wav[SMP.currentChannel][1] = currentMode->pos[2];
-      Serial.println("File: " + String(getFolderNumber(SMP.wav[SMP.currentChannel][1])) + " / " + String(getFileNumber(SMP.wav[SMP.currentChannel][1])));
+      SMP..wav[SMP.currentChannel][1] = currentMode->pos[2];
+      Serial.println("File: " + String(getFolderNumber(SMP..wav[SMP.currentChannel][1])) + " / " + String(getFileNumber(SMP..wav[SMP.currentChannel][1])));
 
       // reset SEEK and stop sample playing
       SMP.smplen = 0;
@@ -1963,10 +1962,10 @@ int getFileNumber(int value) {
       if (sampleFile) {
         sampleFile.seek(0);
       }
-      if (SMP.wav[SMP.currentChannel][1] < 100) showIcons("icon_sample", col[SMP.y - 1]);
+      if (SMP..wav[SMP.currentChannel][1] < 100) showIcons("icon_sample", col[SMP.y - 1]);
 
       char OUTPUTf[50];
-      sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]));
+      sprintf(OUTPUTf, "samples/%d/_%d.wav", getFolderNumber(SMP..wav[SMP.currentChannel][1]), getFileNumber(SMP..wav[SMP.currentChannel][1]));
       serialprintln("------");
       serialprintln(OUTPUTf);
       
@@ -1974,37 +1973,46 @@ int getFileNumber(int value) {
      
 
 
-    if (SMP.wav[SMP.currentChannel][1] < getFolderNumber(SMP.wav[SMP.currentChannel][1]+1) * 100) {
+    if (SMP..wav[SMP.currentChannel][1] < getFolderNumber(SMP..wav[SMP.currentChannel][1]+1) * 100) {
       Serial.print("exceeded first number of folder ");
-      Serial.println(getFolderNumber(SMP.wav[SMP.currentChannel][1]+1));
-      SMP.wav[SMP.currentChannel][1] = lastFile[getFolderNumber(SMP.wav[SMP.currentChannel][1])];
-      SMP.folder = getFolderNumber(SMP.wav[SMP.currentChannel][1]);
+      Serial.println(getFolderNumber(SMP..wav[SMP.currentChannel][1]+1));
+      SMP..wav[SMP.currentChannel][1] = lastFile[getFolderNumber(SMP..wav[SMP.currentChannel][1])];
+      SMP.folder = getFolderNumber(SMP..wav[SMP.currentChannel][1]);
       //write encoder
-       encoders[2].write((SMP.wav[SMP.currentChannel][1] * 4)-1);
+       encoders[2].write((SMP..wav[SMP.currentChannel][1] * 4)-1);
        encoders[1].write((SMP.folder * 4)-1);
      }
 
 
- if ( lastPreviewedSample[getFolderNumber(SMP.wav[SMP.currentChannel][1])] < SMP.wav[SMP.currentChannel][1]){
-     if (SMP.wav[SMP.currentChannel][1] > lastFile[getFolderNumber(SMP.wav[SMP.currentChannel][1])]) {
+ if ( lastPreviewedSample[getFolderNumber(SMP..wav[SMP.currentChannel][1])] < SMP..wav[SMP.currentChannel][1]){
+     if (SMP..wav[SMP.currentChannel][1] > lastFile[getFolderNumber(SMP..wav[SMP.currentChannel][1])]) {
       Serial.print("exceeding last file number of folder ");
-      Serial.println(getFolderNumber(SMP.wav[SMP.currentChannel][1]));
-      SMP.wav[SMP.currentChannel][1] = ((getFolderNumber(SMP.wav[SMP.currentChannel][1])+1)*100);
-      SMP.folder = getFolderNumber(SMP.wav[SMP.currentChannel][1]+1);
+      Serial.println(getFolderNumber(SMP..wav[SMP.currentChannel][1]));
+      SMP..wav[SMP.currentChannel][1] = ((getFolderNumber(SMP..wav[SMP.currentChannel][1])+1)*100);
+      SMP.folder = getFolderNumber(SMP..wav[SMP.currentChannel][1]+1);
       //write encoder
-      encoders[2].write((SMP.wav[SMP.currentChannel][1] * 4)-1);
+      encoders[2].write((SMP..wav[SMP.currentChannel][1] * 4)-1);
       encoders[1].write((SMP.folder * 4)-1);
      }
      }
 
-        lastPreviewedSample[getFolderNumber(SMP.wav[SMP.currentChannel][1])] = SMP.wav[SMP.currentChannel][1];
+        lastPreviewedSample[getFolderNumber(SMP..wav[SMP.currentChannel][1])] = SMP..wav[SMP.currentChannel][1];
         showIcons("helper_select", col[SMP.y - 1]);
         showIcons("helper_load", CRGB(0, 20, 0));
         showIcons("helper_folder", CRGB(10, 30, 0));
-        showNumber(SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
-        previewSample(getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]), true, true);
+        showNumber(SMP..wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP..wav[SMP.currentChannel][1])], 0);
+        previewSample(getFolderNumber(SMP..wav[SMP.currentChannel][1]), getFileNumber(SMP..wav[SMP.currentChannel][1]), true, true);
         sampleIsLoaded = true;
-      
+        
+      //} else {
+      /*
+        encoders[2].write(((lastPreviewedSample[SMP.folder]) * 4) - 1);
+        showIcons("helper_select", col[SMP.y - 1]);
+        showIcons("helper_load", CRGB(0, 0, 0));
+        showIcons("helper_folder", CRGB(10, 10, 0));
+        showNumber(((SMP.folder - 1) * 100) + SMP..wav[SMP.currentChannel][1], col_Folder[SMP.folder - 1], 0);
+       }
+       */
     }
   }
 
@@ -2318,8 +2326,8 @@ int getFileNumber(int value) {
   }
 
   void loadWav() {
-    Serial.println("Loading Wave :" + String(SMP.wav[SMP.currentChannel][1]));
-    loadSample(0, SMP.wav[SMP.currentChannel][1]);
+    Serial.println("Loading Wave :" + String(SMP..wav[SMP.currentChannel][1]));
+    loadSample(0, SMP..wav[SMP.currentChannel][1]);
     switchMode(&singleMode);
     SMP.singleMode = true;
   }
@@ -2446,7 +2454,7 @@ int getFileNumber(int value) {
       serialprintln("edit: " + String(SMP.edit));
       serialprintln("file: " + String(SMP.file));
       serialprintln("pack: " + String(SMP.pack));
-      serialprintln("wav: " + String(SMP.wav[SMP.currentChannel][1]));
+      serialprintln("wav: " + String(SMP..wav[SMP.currentChannel][1]));
       serialprintln("folder: " + String(SMP.folder));
       serialprintln("activeCopy: " + String(SMP.activeCopy));
       serialprintln("x: " + String(SMP.x));

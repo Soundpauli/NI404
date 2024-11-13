@@ -699,17 +699,11 @@ const int noSD[48][2] =
 
     // Search Wave + Load + Exit
     if ((currentMode == &singleMode) && buttonString == "2200") {
-      //set loaded sample
+      //toDO: set current encoder to loaded file
+
       switchMode(&set_Wav);
-      currentMode->pos[2] = SMP.wav[SMP.currentChannel][0];
-      SMP.wav[SMP.currentChannel][1] = SMP.wav[SMP.currentChannel][0];
-      encoders[2].write((SMP.wav[SMP.currentChannel][0] * 4)-1);
     } else if ((currentMode == &set_Wav) && buttonString == "1000") {
-      //set SMP.wav[currentChannel][0] and [1] to current file
-      SMP.wav[SMP.currentChannel][0] = SMP.wav[SMP.currentChannel][1];
-      currentMode->pos[2] = SMP.wav[SMP.currentChannel][0];
       loadWav();
-      autoSave();
     } else if ((currentMode == &set_Wav) && buttonString == "0001") {
       switchMode(&singleMode);
       SMP.singleMode = true;
@@ -1522,7 +1516,9 @@ const int noSD[48][2] =
       showSamplePack();
     } else if (currentMode->name == "SET_WAV") {
       showWave();
+      //set the encoder to the SMP.wav[SMP.currentChannel][1] of the current channel
       
+      encoders[3].write(SMP.wav[SMP.currentChannel][1] * 4);
 
     } else if (currentMode->name == "NOTE_SHIFT") {
       shiftNotes();
@@ -1861,7 +1857,10 @@ int getFileNumber(int value) {
 
 
   void showWave() {
-    
+    Serial.print(SMP.currentChannel);
+    Serial.print(" = ");
+    Serial.println(SMP.wav[SMP.currentChannel][1]);
+
     File sampleFile;
     drawNoSD();
 
@@ -1883,7 +1882,7 @@ int getFileNumber(int value) {
       Serial.println("Folder: " + String(SMP.folder - 1));
       SMP.wav[SMP.currentChannel][1] = ((SMP.folder-1)*100);
       Serial.println("wav: " + String(SMP.wav[SMP.currentChannel][1]));
-      encoders[1].write((SMP.wav[SMP.currentChannel][1] * 4)-1);
+      encoders[2].write((SMP.wav[SMP.currentChannel][1] * 4)-1);
     }
 
     // ENDPOSITION SAMPLE
@@ -2004,7 +2003,16 @@ int getFileNumber(int value) {
         showNumber(SMP.wav[SMP.currentChannel][1], col_Folder[getFolderNumber(SMP.wav[SMP.currentChannel][1])], 0);
         previewSample(getFolderNumber(SMP.wav[SMP.currentChannel][1]), getFileNumber(SMP.wav[SMP.currentChannel][1]), true, true);
         sampleIsLoaded = true;
-      
+        
+      //} else {
+      /*
+        encoders[2].write(((lastPreviewedSample[SMP.folder]) * 4) - 1);
+        showIcons("helper_select", col[SMP.y - 1]);
+        showIcons("helper_load", CRGB(0, 0, 0));
+        showIcons("helper_folder", CRGB(10, 10, 0));
+        showNumber(((SMP.folder - 1) * 100) + SMP.wav[SMP.currentChannel][1], col_Folder[SMP.folder - 1], 0);
+       }
+       */
     }
   }
 

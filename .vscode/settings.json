@@ -1,0 +1,7 @@
+{
+    "files.defaultLanguage": "",
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "cstring": "cpp"
+    }
+}

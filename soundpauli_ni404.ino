@@ -22,7 +22,7 @@
   #define NUM_LEDS 256
   #define DATA_PIN 17
   int lastFile[9] = {0};
-  
+  bool tmpMute = false;
   const unsigned int defaultVelocity = 63;
   const unsigned int maxX = 16;
   const unsigned int maxY = 16;
@@ -234,11 +234,11 @@ const int noSD[48][2] =
   EXTMEM Device SMP = { false, 1, 10, 100, 10, 1, 1, 1, 1, {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 0, false, 1, 16, 0, 0, 0, 0, 0, { maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution, maxfilterResolution }, {} };
 
   Encoder encoders[4] = {
-    Encoder(22, 5),   // 0, LEFT KNOB  (UP / DOWN, REMOVE TRIGGER, doubleTab: Enter/Exit Single-Sample-Mode)
-    Encoder(2, 4),    // 1, RIGHT KNOB (LEFT / RIGHT, ADD TRIGGER)
-    Encoder(14, 9),   // 2, MIDDLE LEFT KNOB (SELECT PAGE, double-tab+hold: set Accents), Long hold(+l/r knob): Select BPM OR VOLUME
+    Encoder(5, 22),   // 0, LEFT KNOB  (UP / DOWN, REMOVE TRIGGER, doubleTab: Enter/Exit Single-Sample-Mode)
+    Encoder(4, 2),    // 1, RIGHT KNOB (LEFT / RIGHT, ADD TRIGGER)
+    Encoder(9, 14),   // 2, MIDDLE LEFT KNOB (SELECT PAGE, double-tab+hold: set Accents), Long hold(+l/r knob): Select BPM OR VOLUME
                       // REMOVE IF YOU ONLY HAVE 3
-    Encoder(33, 32),  // 3 Middle Right Knob
+    Encoder(32, 33),  // 3 Middle Right Knob
   };
 
   // DO YOU HAVE 4 ENCODERS? (s.above), set pins to 99,99 or similar
@@ -293,6 +293,8 @@ const int noSD[48][2] =
   }
 
   void drawNoSD() {
+    bool noSDfound = false;
+
     while (!SD.begin(10)) {
       FastLEDclear();
       for (unsigned int gx = 0; gx < 48; gx++) {
@@ -300,6 +302,13 @@ const int noSD[48][2] =
       }
       FastLEDshow();
       delay(1000);
+      noSDfound = true;
+    }
+
+    if (noSDfound && SD.begin(BUILTIN_SDCARD)) {
+     FastLEDclear();
+     setLastFile();
+     noSDfound = false;
     }
   }
 
@@ -358,24 +367,12 @@ const int noSD[48][2] =
     pinMode(3, INPUT_PULLDOWN);
     pinMode(16, INPUT_PULLDOWN);
     FastLED.addLeds<WS2812SERIAL, DATA_PIN, BRG>(leds, NUM_LEDS);
-    showIntro();
+    //showIntro();
     
     serialprint("Initializing SD card...");
     drawNoSD();
 
-    //set maxFiles in folder and show loading...
-    for (int f = 0; f <= maxFolders; f++) {
-      FastLEDclear();
-      
-      for (unsigned int i = 1; i < 99; i++) {
-        char OUTPUTf[50];
-          sprintf(OUTPUTf, "samples/%d/_%d.wav", f, i+(f*100));
-        if (SD.exists(OUTPUTf)) {
-          lastFile[f] = i+(f*100);
-          }   
-      }
-      drawLoadingBar(1,999,lastFile[f],col_Folder[f], CRGB(15,15,55));
-    }
+    getLastFiles();   
     loadSamplePack(samplePackID);
 
     for (unsigned int vx = 1; vx < SONG_LEN + 1; vx++) {
@@ -404,7 +401,33 @@ const int noSD[48][2] =
     //_samplers[13].addVoice(sound13, mixer4, 0, envelope13);
     //_samplers[15].addVoice(sound15, mixer4, 2 , envelope15);
 
-    mixer1.gain(0, 0.25);
+    mixer1.gain(0, 0.5);
+    mixer1.gain(1, 0.5);
+    mixer1.gain(2, 0.5);
+    mixer1.gain(3, 0.5);
+
+    mixer2.gain(0, 0.5);
+    mixer2.gain(1, 0.5);
+    mixer2.gain(2, 0.5);
+    mixer2.gain(3, 0.5);
+
+    mixer3.gain(0, 0.5);
+    mixer3.gain(1, 0.5);
+    mixer3.gain(2, 0.5);
+    mixer3.gain(3, 0.5);
+
+    mixer4.gain(0, 0.5);
+    mixer4.gain(1, 0.5);
+    mixer4.gain(2, 0.5);
+    mixer4.gain(3, 0.5);
+
+    mixer_end.gain(0, 0.5);
+    mixer_end.gain(1, 0.5);
+    mixer_end.gain(2, 0.5);
+    mixer_end.gain(3, 0.5);
+
+/*
+        mixer1.gain(0, 0.25);
     mixer1.gain(1, 0.25);
     mixer1.gain(2, 0.25);
     mixer1.gain(3, 0.25);
@@ -428,6 +451,7 @@ const int noSD[48][2] =
     mixer_end.gain(1, 0.25);
     mixer_end.gain(2, 0.25);
     mixer_end.gain(3, 0.25);
+*/
 
     // configure what the synth will sound like
     //FIRST SYNTH
@@ -478,6 +502,12 @@ const int noSD[48][2] =
     // turn on the output
     sgtl5000_1.enable();
     sgtl5000_1.volume(0.9);
+
+      sgtl5000_1.unmuteLineout();
+    // According to info in libraries\Audio\control_sgtl5000.cpp
+    // 31 is LOWEST output of 1.16V and 13 is HIGHEST output of 3.16V
+    sgtl5000_1.lineOutLevel(1);
+
     AudioMemory(64);
 
     autoLoad();
@@ -544,6 +574,15 @@ const int noSD[48][2] =
       }
     }
 
+    // print buttons
+    for (int i = 1; i < 5; i++) {
+      Serial.print(i);
+      Serial.print(">>");
+      Serial.println(buttons[i]);
+      Serial.println("--------------");
+    }
+
+
     if (memcmp(buttons, oldButtons, sizeof(buttons)) != 0) {
       memcpy(oldButtons, buttons, sizeof(buttons));  // Update oldButtons
       lastButtonPressTime = millis();
@@ -553,21 +592,34 @@ const int noSD[48][2] =
 
   void checkMode() {
     // Create the button string combination
-
+  
     if (!isEncoder4Defined)
       buttons[4] = 0;
 
     buttonString = String(buttons[1]) + String(buttons[2]) + String(buttons[4]) + String(buttons[3]);
 
     // Toggle play/pause in draw or single mode
-    String playButtonString = isEncoder4Defined ? "0010" : "1001";
-    if ((currentMode == &draw || currentMode == &singleMode || currentMode == &noteShift) && buttonString == playButtonString) {
+    if ((currentMode == &draw || currentMode == &singleMode || currentMode == &noteShift) && buttonString == "0010") {
       togglePlay(isPlaying);
     }
 
+
+  
+    if ((currentMode == &draw || currentMode == &singleMode || currentMode == &noteShift) && buttonString == "0200") {
+      tmpMute = true;
+      tmpMuteAll(true);
+    }
+    
+
+
+    if ((currentMode == &draw || currentMode == &singleMode) && buttonString == "0900") {
+
+      if (tmpMute) tmpMuteAll(false);
+
+    }
+
     // Shift notes around in single mode after dblclick of button 4
-    String shiftButtonString = isEncoder4Defined ? "0020" : "2000";
-    if (currentMode == &singleMode && buttonString == shiftButtonString) {
+    if (currentMode == &singleMode && buttonString == "0220") {
 
       SMP.shiftX = 8;
       encoders[2].write(8 * 4);
@@ -603,13 +655,19 @@ const int noSD[48][2] =
       SMP.singleMode = true;
     }
 
-    if (currentMode == &noteShift && buttonString == "0100") {
+    if (currentMode == &noteShift && buttonString == "0001") {
+      switchMode(&singleMode);
+      SMP.singleMode = true;
+    }
+
+    if (currentMode == &noteShift && buttonString == "1000") {
+      // toDO: undo note shift on cancel
       switchMode(&singleMode);
       SMP.singleMode = true;
     }
 
     // Switch to volume mode in draw or single mode
-    if ((currentMode == &draw || currentMode == &singleMode) && buttonString == "0200") {
+    if ((currentMode == &draw || currentMode == &singleMode) && buttonString == "0020") {
       switchMode(&volume_bpm);
     }
 
@@ -617,6 +675,8 @@ const int noSD[48][2] =
     if (currentMode == &draw && buttonString == "1100") {
       toggleCopyPaste();
     }
+
+
 
     // Handle velocity switch in single mode
     if ((currentMode == &singleMode) && buttonString == "0300") {
@@ -661,7 +721,7 @@ const int noSD[48][2] =
     }
 
     // Switch to draw mode from volume mode
-    if (currentMode == &volume_bpm && buttonString == "0900") {
+    if (currentMode == &volume_bpm && buttonString == "0090") {
       switchMode(&draw);
       // setvol = false;
     }
@@ -685,7 +745,7 @@ const int noSD[48][2] =
     }
 
     // Menu Load/Save
-    if ((currentMode == &draw) && buttonString == "0202") {
+    if ((currentMode == &draw) && buttonString == "0022") {
       switchMode(&menu);
     } else if ((currentMode == &menu) && buttonString == "0001") {
       paintMode = false;
@@ -776,6 +836,35 @@ const int noSD[48][2] =
       switchMode(&singleMode);
       SMP.singleMode = true;
     }
+  }
+
+
+  void setLastFile(){
+     //set maxFiles in folder and show loading...
+    for (int f = 0; f <= maxFolders; f++) {
+      FastLEDclear();
+      
+      for (unsigned int i = 1; i < 99; i++) {
+        char OUTPUTf[50];
+          sprintf(OUTPUTf, "samples/%d/_%d.wav", f, i+(f*100));
+        if (SD.exists(OUTPUTf)) {
+          lastFile[f] = i+(f*100);
+          }   
+      }
+      drawLoadingBar(1,999,lastFile[f],col_Folder[f], CRGB(15,15,55));
+    }
+    //set lastFile Array into Eeprom
+    EEPROM.put(100, lastFile);
+  }
+
+  void getLastFiles(){
+    //get lastFile Array from Eeprom
+    EEPROM.get(100, lastFile);
+    //if lastFile from eeprom is empty, set it
+    if (lastFile[0] == 0){
+      setLastFile();
+    }
+    
   }
 
   void shiftNotes() {
@@ -880,13 +969,40 @@ const int noSD[48][2] =
   }
 
 
+  void tmpMuteAll(bool pressed){
+    
+    Serial.print("=========>");
+    Serial.print(pressed);
+    Serial.print("<=========");
+
+    if (pressed>0){
+    //mute all channels except current 
+    for (unsigned int i = 1; i < maxFiles + 1; i++) {
+      if (i != SMP.y - 1) {
+        SMP.mute[i] = true;
+        Serial.println("-------------------------------------MUTE ALL");
+      }
+    }
+    } else{
+      //unmute all channels
+      tmpMute=false;
+      for (unsigned int i = 1; i < maxFiles + 1; i++) {
+        SMP.mute[i] = false;
+        Serial.println("-------------------------------------UNMUTE ALL");
+      }
+    }
+  }
+
   void toggleMute() {
+    
     if (SMP.mute[SMP.y - 1]) {
+      Serial.println("++++++++++++++++++ MUTE false");
       SMP.mute[SMP.y - 1] = false;
       //envelopes[SMP.y - 1]->release(11880 / 2);
     } else {
       // wenn leer oder nicht gemuted:
       SMP.mute[SMP.y - 1] = true;
+      Serial.println("++++++++++++++++++ MUTE true");
       // envelopes[SMP.y - 1]->release(120);
     }
   }

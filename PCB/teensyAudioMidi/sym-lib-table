@@ -1,4 +1,0 @@
-(sym_lib_table
-  (version 7)
-  (lib (name "teensy")(type "KiCad")(uri "D:/PCBs/myKicadLib/teensy_library-master/teensy_library-master/teensy.kicad_sym")(options "")(descr ""))
-)

@@ -104,5 +104,5 @@ Additionally, my gratitude goes out to the broader community of developers and e
 
 Thank you all for your hard work, ingenuity, and commitment to making the Teensy platform a powerful and accessible tool for creators around the world.
 
-Jan from soundpauli
+Jan from SP_ (formaly known as soundpauli)
 Hamburg, January 2024

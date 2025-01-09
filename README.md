@@ -1,3 +1,8 @@
+IMPORTANT NOTE:
+
+This project, the NI404, is a stale project and is no longer actively maintained. However, it still works and remains an excellent, affordable project for beginners interested in building their own hardware sampler-sequencer. Soldering is required to assemble the NI404. For those looking for a more modern alternative, check out the successor project, Soundpauli:Toern (https://github.com/Soundpauli/toern). The new project offers the option to purchase a self-build kit that doesn't require soldering skills or a fully assembled version. While the NI404 is an older design, feel free to fork the code and contribute to its development if you're interested.
+---------
+
 
 DIY OPEN SOURCE HARDWARE SAMPLER-SEQUENCER
 ---------

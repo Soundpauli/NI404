@@ -6,7 +6,7 @@ IMPORTANT NOTE:
 
 This project, the NI404, is a stale project and is no longer actively maintained. However, it still works and remains an excellent, affordable project for beginners interested in building their own hardware sampler-sequencer. Soldering is required to assemble the NI404. 
 
-For those looking for a more modern alternative, check out the successor project, Soundpauli:toern (https://github.com/Soundpauli/toern). The new project offers the option to purchase a self-build kit that doesn't require soldering skills or a fully assembled version. While the NI404 is an older design, feel free to fork the code and contribute to its development if you're interested.
+For those looking for a more modern alternative, check out the successor project, toern (https://github.com/Soundpauli/toern). The new project offers the option to purchase a self-build kit that doesn't require soldering skills or a fully assembled version. While the NI404 is an older design, feel free to fork the code and contribute to its development if you're interested.
 
 ---------
 
@@ -15,7 +15,7 @@ An Etch-A-SketchTM inspired device for beginners and makers.
 
 THE OPEN SOURCE SAMPLE-SEQUENCER FOR EVERYONE.
 
-The NI404 is an innovative, open-source DIY sample-sequencer from soundpauli - inspired by the classic Etch-A-Sketch, tailored for beginners and DIY enthusiasts. Designed around the Teensy Microcontroller and Audioboard from PJRC, this device offers an accessible entry point into the world of music creation.
+The NI404 is an innovative, open-source DIY sample-sequencer from SP_ (formaly known as soundpauli) - inspired by the classic Etch-A-Sketch, tailored for beginners and DIY enthusiasts. Designed around the Teensy Microcontroller and Audioboard from PJRC, this device offers an accessible entry point into the world of music creation.
 The NI404 is more than just a musical instrument; it's a journey into the world of sound exploration, perfect for live performances, studio sessions, or simply having fun creating music. Whether you're a seasoned musician or a curious beginner, the NI404 is your gateway to an exciting world of musical possibilities.
 
 EASY TO USE.

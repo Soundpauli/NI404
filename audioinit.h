@@ -135,7 +135,6 @@ AudioConnection patchCord15_3(filter15, 0, mixer4, 2);*/
 AudioConnection patchCord0_1(sound0, envelope0);
 AudioConnection patchCord0_2(envelope0, 0, mixer4, 3);
 
-
 AudioConnection patchCordEnd_1(mixer1, 0, mixer_end, 0);
 AudioConnection patchCordEnd_2(mixer2, 0, mixer_end, 1);
 AudioConnection patchCordEnd_3(mixer3, 0, mixer_end, 2);

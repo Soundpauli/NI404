@@ -1,27 +1,13 @@
+
 DIY OPEN SOURCE HARDWARE SAMPLER-SEQUENCER
 
 ---------
-
-
-IMPORTANT NOTE:
-
-This project, the NI404, is a stale project and is no longer actively maintained. However, it still works and remains an excellent, affordable project for beginners interested in building their own hardware sampler-sequencer. Soldering is required to assemble the NI404. 
-
-For those looking for a more modern alternative, check out the successor project, toern (https://github.com/Soundpauli/toern). The new project offers the option to purchase a self-build kit that doesn't require soldering skills or a fully assembled version. While the NI404 is an older design, feel free to fork the code and contribute to its development if you're interested.
-
----------
-
 An Etch-A-SketchTM inspired device for beginners and makers.
 
 
 THE OPEN SOURCE SAMPLE-SEQUENCER FOR EVERYONE.
-<<<<<<< HEAD
 -------------
 The NI404 is an innovative, open-source DIY sample-sequencer from SP_ (aka soundpauli) - inspired by the classic Etch-A-Sketch, tailored for beginners and DIY enthusiasts. Designed around the Teensy Microcontroller and Audioboard from PJRC, this device offers an accessible entry point into the world of music creation.
-=======
-
-The NI404 is an innovative, open-source DIY sample-sequencer from SP_ (formaly known as soundpauli) - inspired by the classic Etch-A-Sketch, tailored for beginners and DIY enthusiasts. Designed around the Teensy Microcontroller and Audioboard from PJRC, this device offers an accessible entry point into the world of music creation.
->>>>>>> 7d1964479870bf18bf8a6309d7f64ec11712a006
 The NI404 is more than just a musical instrument; it's a journey into the world of sound exploration, perfect for live performances, studio sessions, or simply having fun creating music. Whether you're a seasoned musician or a curious beginner, the NI404 is your gateway to an exciting world of musical possibilities.
 
 EASY TO USE.
@@ -123,9 +109,5 @@ Additionally, my gratitude goes out to the broader community of developers and e
 
 Thank you all for your hard work, ingenuity, and commitment to making the Teensy platform a powerful and accessible tool for creators around the world.
 
-<<<<<<< HEAD
 Jan from SP_
-=======
-Jan from SP_ (formaly known as soundpauli)
->>>>>>> 7d1964479870bf18bf8a6309d7f64ec11712a006
 Hamburg, January 2024
